@@ -41,13 +41,13 @@ window.CONVITE = {
       botoes: [
         { rotulo: "Confirmar presença",
           href: "https://wa.me/558888232559?text=Ol%C3%A1!%20Confirmo%20presen%C3%A7a%20no%201%C2%BA%20anivers%C3%A1rio%20do%20Pedro%20e%20do%20Abra%C3%A3o%20%F0%9F%8E%89",
-          left: 14, top: 79, width: 22, height: 14 },
+          left: 15, top: 78, width: 18, height: 13 },
         { rotulo: "Localização",
           href: "https://www.google.com/maps/dir//Travessuras+Buffet,+R.+Apolo+%E2%85%AA,+106+-+Santo+Ant%C3%B4nio,+Juazeiro+do+Norte+-+CE,+63050-170/@-7.2135043,-39.3281053,17z",
-          left: 38.5, top: 79, width: 22, height: 14 },
+          left: 40, top: 78, width: 19, height: 13 },
         // abre a imagem de sugestões de presentes (se tiver); senão troque por href
-        { rotulo: "Sugestões de presentes", acao: "imagem", imagem: "presentes.jpg",
-          left: 63.5, top: 79, width: 22, height: 14 }
+        { rotulo: "Sugestões de presentes", acao: "imagem", imagem: "presentes.jpg", pix: "07749106316",
+          left: 65, top: 78, width: 19, height: 13 }
       ]
     }
   ],

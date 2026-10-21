@@ -78,6 +78,10 @@
                 box-shadow:0 12px 44px rgba(0,0,0,.6); }
   #overlayFechar{ right:14px; top:14px; width:42px; height:42px;
                   justify-content:center; font-size:20px; z-index:9; }
+  #overlayPix{ left:50%; transform:translateX(-50%); bottom:20px; z-index:9;
+               padding:13px 22px; font-size:15px; font-weight:700; letter-spacing:.02em;
+               background:#e4002b; color:#fff; gap:8px; }
+  #overlayPix.ok{ background:#1a9e4b; }
 </style>
 </head>
 <body>
@@ -104,6 +108,7 @@
     <div id="overlay" hidden>
       <img id="overlayImg" alt="Sugestões de presentes">
       <button id="overlayFechar" class="ctrl" aria-label="Fechar">✕</button>
+      <button id="overlayPix" class="ctrl" hidden></button>
     </div>
   </div>
 </div>
@@ -126,12 +131,40 @@
   const setaAnt = $('#setaAnt'), setaProx = $('#setaProx'), bolinhas = $('#bolinhas');
   const musica = $('#musica'), carregando = $('#carregando');
   const overlay = $('#overlay'), overlayImg = $('#overlayImg'), overlayFechar = $('#overlayFechar');
+  const overlayPix = $('#overlayPix');
+  let pixAtual = '';
 
   /* ---------- overlay de imagem ---------- */
-  function abrirOverlay(src){ if(!src) return; overlayImg.src = src; overlay.hidden = false; }
-  function fecharOverlay(){ overlay.hidden = true; overlayImg.src = ''; }
+  function abrirOverlay(src, pix){
+    if(!src) return;
+    overlayImg.src = src;
+    pixAtual = pix || '';
+    if (pixAtual){
+      overlayPix.hidden = false;
+      overlayPix.classList.remove('ok');
+      overlayPix.textContent = 'Copiar chave PIX';
+    } else {
+      overlayPix.hidden = true;
+    }
+    overlay.hidden = false;
+  }
+  function fecharOverlay(){ overlay.hidden = true; overlayImg.src = ''; overlayPix.hidden = true; }
+  function copiarPix(){
+    const txt = pixAtual;
+    const ok = () => { overlayPix.classList.add('ok'); overlayPix.textContent = '✓ Chave PIX copiada!';
+                       setTimeout(() => { overlayPix.classList.remove('ok'); overlayPix.textContent = 'Copiar chave PIX'; }, 2500); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(ok).catch(() => fallbackCopia(txt, ok));
+    } else { fallbackCopia(txt, ok); }
+  }
+  function fallbackCopia(txt, ok){
+    try { const t = document.createElement('textarea'); t.value = txt; t.style.position='fixed'; t.style.opacity='0';
+          document.body.appendChild(t); t.focus(); t.select(); document.execCommand('copy'); document.body.removeChild(t); ok(); }
+    catch(e){ overlayPix.textContent = txt; }
+  }
   overlay.addEventListener('click', e => { e.stopPropagation(); fecharOverlay(); });
   overlayFechar.addEventListener('click', e => { e.stopPropagation(); fecharOverlay(); });
+  overlayPix.addEventListener('click', e => { e.stopPropagation(); copiarPix(); });
 
   /* ícones do botão de som (Lucide: volume-2 / volume-x) */
   const ICON_SOM_ON  = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
@@ -236,7 +269,7 @@
       } else if (b.acao === 'proxima'){
         a.href = '#'; a.onclick = e => { e.preventDefault(); irPara(atual + 1); };
       } else if (b.acao === 'imagem'){
-        a.href = '#'; a.onclick = e => { e.preventDefault(); abrirOverlay(b.imagem); };
+        a.href = '#'; a.onclick = e => { e.preventDefault(); abrirOverlay(b.imagem, b.pix); };
       } else {
         a.href = b.href || '#';
         a.target = '_blank'; a.rel = 'noopener';
