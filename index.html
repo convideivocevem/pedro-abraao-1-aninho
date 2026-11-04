@@ -200,7 +200,7 @@
     musica.src = C.musica.arquivo;
     musica.volume = C.musica.volume != null ? C.musica.volume : .55;
   }
-  if (C.video && C.video.arquivo) elVideo.src = C.video.arquivo;
+  if (C.video && C.video.arquivo){ elVideo.src = C.video.arquivo; try { elVideo.load(); } catch(e){} }  // começa a carregar cedo
   if (C.capa && C.capa.imagem) elVideo.poster = C.capa.imagem;   // mostra a capa enquanto o vídeo carrega (evita tela preta)
   if (C.video && C.video.textoPular) btnPular.textContent = C.video.textoPular;
 
@@ -234,14 +234,17 @@
       musica.volume = 0.05;                    // música bem baixinha durante o vídeo
       videoIniciou = false;
       elVideo.muted = false;
-      // tenta com som; se bloquear, tenta mudo; se nem assim rodar, vai direto pro convite
+      // tenta com som; se bloquear, tenta mudo (mantém a capa como poster enquanto carrega)
+      try { elVideo.load(); } catch(e){}
       Promise.resolve(elVideo.play())
         .catch(() => { elVideo.muted = true; return elVideo.play(); })
-        .catch(() => fimDoVideo());
+        .catch(() => {});   // se o play falhar, segue mostrando a capa; o botão "Pular" fica disponível
       if (C.video.mostrarBotaoPular !== false) btnPular.hidden = false;
-      // plano B: se o vídeo não começar a tocar em ~9s (buffer/webview), pula pro convite (evita tela preta)
+      // plano B tolerante: só pula pro convite após 20s SE o vídeo não tiver nem um quadro pronto
       clearTimeout(videoWatchdog);
-      videoWatchdog = setTimeout(() => { if (estado === 'video' && !videoIniciou) fimDoVideo(); }, 9000);
+      videoWatchdog = setTimeout(() => {
+        if (estado === 'video' && !videoIniciou && elVideo.readyState < 2) fimDoVideo();
+      }, 20000);
     } else {
       irPara(0);
     }
