@@ -40,7 +40,7 @@
 
   /* controles */
   .ctrl{ position:absolute; z-index:6; border:0; cursor:pointer; color:#fff;
-         background:rgba(0,0,0,.42); backdrop-filter:blur(6px);
+         background:rgba(0,0,0,.55);
          border-radius:999px; font-size:14px; line-height:1;
          display:flex; align-items:center; gap:7px; }
   #btnPular{ right:14px; top:14px; padding:10px 16px; }
@@ -231,7 +231,7 @@
     if (C.video && C.video.arquivo){
       estado = 'video';
       mostrar(elVideo);
-      musica.volume = 0.05;                    // música bem baixinha durante o vídeo
+      try { musica.pause(); } catch(e){}       // pausa a música durante o vídeo (evita travar no celular)
       videoIniciou = false;
       if (C.video.mostrarBotaoPular !== false) btnPular.hidden = false;
       // dá o play (com som; se bloquear, mudo). A capa fica de poster enquanto carrega.
@@ -271,6 +271,7 @@
     try { elVideo.pause(); } catch(e){}
     btnPular.hidden = true;
     musica.volume = C.musica && C.musica.volume != null ? C.musica.volume : .55;
+    tocarMusica();                           // religa a música depois do vídeo
     irPara(0);
   }
 
