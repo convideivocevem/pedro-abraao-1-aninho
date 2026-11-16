@@ -233,18 +233,33 @@
       mostrar(elVideo);
       musica.volume = 0.05;                    // música bem baixinha durante o vídeo
       videoIniciou = false;
-      elVideo.muted = false;
-      // tenta com som; se bloquear, tenta mudo (mantém a capa como poster enquanto carrega)
-      try { elVideo.load(); } catch(e){}
-      Promise.resolve(elVideo.play())
-        .catch(() => { elVideo.muted = true; return elVideo.play(); })
-        .catch(() => {});   // se o play falhar, segue mostrando a capa; o botão "Pular" fica disponível
       if (C.video.mostrarBotaoPular !== false) btnPular.hidden = false;
-      // plano B tolerante: só pula pro convite após 20s SE o vídeo não tiver nem um quadro pronto
+      // dá o play (com som; se bloquear, mudo). A capa fica de poster enquanto carrega.
+      const tocarVideo = () => {
+        elVideo.muted = false;
+        Promise.resolve(elVideo.play())
+          .catch(() => { elVideo.muted = true; return elVideo.play(); })
+          .catch(() => {});
+      };
+      // espera bufferizar o suficiente antes de começar (evita travadas); se já tem dados, começa logo
+      try { elVideo.load(); } catch(e){}
+      if (elVideo.readyState >= 4){
+        tocarVideo();
+      } else {
+        const aoConseguir = () => { elVideo.removeEventListener('canplaythrough', aoConseguir); tocarVideo(); };
+        elVideo.addEventListener('canplaythrough', aoConseguir);
+        // reforço: se em 6s já der para começar (readyState>=3), começa mesmo sem o canplaythrough
+        setTimeout(() => {
+          if (estado === 'video' && !videoIniciou && elVideo.readyState >= 3){
+            elVideo.removeEventListener('canplaythrough', aoConseguir); tocarVideo();
+          }
+        }, 6000);
+      }
+      // plano B tolerante: só pula pro convite após 25s SE o vídeo não tiver nem um quadro pronto
       clearTimeout(videoWatchdog);
       videoWatchdog = setTimeout(() => {
         if (estado === 'video' && !videoIniciou && elVideo.readyState < 2) fimDoVideo();
-      }, 20000);
+      }, 25000);
     } else {
       irPara(0);
     }
